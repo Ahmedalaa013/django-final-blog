@@ -1,0 +1,58 @@
+{% extends "myblog/base.html" %} {%block title %} Home {% endblock %}
+
+{% block sidebar %}
+<div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 280px;">
+  <a class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+    <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"></use></svg>
+    <span class="fs-4">Categories</span>
+  </a>
+  <hr>
+  <ul class="nav nav-pills flex-column mb-auto">
+    {% for cat in category %}
+    <li class="nav-item d-flex my-2">
+      <a href="{% url 'category_details' cat.pk %}" class="nav-link text-white" aria-current="page">
+        {{cat.name}}
+      </a>
+      {% if user.is_authenticated %}
+      {% for category,sub in subscribtions.items %}
+      {% if category == cat.name %}
+      {% if sub %}
+      <a href="{% url 'cat_sub' cat.pk %}" class="btn btn-danger">Unsubscribe</a>
+      
+      {% else %}
+      <a href="{% url 'cat_sub' cat.pk %}" class="btn btn-primary">Subscribe</a>
+      {% endif %}
+
+      {% endif %}
+      {% endfor %}
+
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  <hr>
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>Top Posts </h1>
+<div class="container">
+    <div class="row flex-column">
+      {% for post in object_list %}
+      <div class="col m-2">
+        <a href="{% url 'post_details' post.pk %}" class="text-decoration-none text-dark">
+        <div class="card h-100" style="width: 24rem" >
+          <img src="{{post.get_img_url}}" class="card-img-top h-100" alt="img" />
+          <div class="card-body">
+            <h3 class="card-title ">{{post.title}}</h3>
+            <p class="card-title ">{{post.body|safe|truncatechars:50}}</p>
+          </div>
+        </div>
+         </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+
+ {% endblock %}

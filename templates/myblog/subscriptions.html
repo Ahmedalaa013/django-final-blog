@@ -1,0 +1,28 @@
+{% extends "myblog/base.html" %} {%block title %} Post {% endblock %} 
+{% block content %} {% if posts %}
+
+    <h1>Subscriptions</h1>
+  
+    {% for post in posts %}
+    <div class="col m-2">
+      <a
+        href="{% url 'post_details' post.pk %}"
+        class="text-decoration-none text-dark"
+      >
+        <div class="card h-100" style="width: 24rem">
+          <img
+            src="{{post.get_img_url}}"
+            class="card-img-top h-100"
+            alt="img"
+          />
+          <div class="card-body">
+            <h3 class="card-title">{{post.title}}</h3>
+            <p class="card-title">{{post.body|safe|truncatechars:50}}</p>
+          </div>
+        </div>
+      </a>
+    </div>
+ 
+{% endfor %} {% else %}
+<h2>Your Subscription is Cancelled successfully</h2>
+{% endif %} {% endblock%}

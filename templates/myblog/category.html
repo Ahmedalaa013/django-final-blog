@@ -1,0 +1,23 @@
+{% extends "myblog/base.html" %} {%block title %} Post {% endblock %} {% block content %}
+   
+    <h1 class="card-text">{{category.name}}</h1>
+    <h5> Posts in this category </h5>
+    <div class="container">
+        <div class="row flex-column">
+          {% for post in category.post_category.all|dictsortreversed:"post_date"%}
+          <div class="col m-2">
+            <a href="{% url 'post_details' post.pk %}" class="text-decoration-none text-dark">
+            <div class="card h-100" style="width: 24rem" >
+              <img src="{{post.get_img_url}}" class="card-img-top h-100" alt="img" />
+              <div class="card-body">
+                <h5 class="card-title ">{{post.title}}</h5>
+                <h5 class="card-title ">{{post.body|safe|truncatechars:50}}</h5>
+              </div>
+            </div>
+             </a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends "myblog/base.html" %} {%block title %} Post {% endblock %} {% block content %}
+<h1>{{post.title}}</h1>
+<p>
+    <img src="{{post.get_img_url}}" width="300px" height="300px" alt="img" />
+</p>
+<a href="{% url 'category_details' post.category.pk %}" class="badge bg-dark text-decoration-none">{{post.category}}</a>
+{% for tag in post.tag.all %}
+  <a class="badge bg-info text-dark text-decoration-none" href="{% url 'tag_details' tag.pk %}">{{ tag.name }}</a>
+{% endfor %}
+<p>{{post.body|safe}}</p>
+{% if user.is_authenticated %}
+<div class="d-flex">
+  {% if liked %}
+  <form action="{% url 'post_like' post.pk %}" method="post">
+    {% csrf_token %}
+    <button
+      class="border-0 bg-white"
+      type="submit"
+      name="post_id"
+      value="{{post.id}}"
+    >
+      <i
+        class="fa-sharp fa-solid fa-thumbs-up"
+        style="color: blue; font-size: 30px"
+      ></i>
+    </button>
+    <span>{{total_likes}} </span>
+  </form>
+  {% else %}
+  <form action="{% url 'post_like' post.pk %}" method="post">
+    {% csrf_token %}
+    <button
+      class="border-0 bg-white"
+      type="submit"
+      name="post_id"
+      value="{{post.id}}"
+    >
+      <i
+        class="fa-sharp fa-solid fa-thumbs-up"
+        style="color: gray; font-size: 30px"
+      ></i>
+    </button>
+    <span>{{total_likes}} </span>
+  </form>
+  {% endif %} {% if disliked %}
+  <form action="{% url 'post_dislike' post.pk %}" method="post" class="ms-4">
+    {% csrf_token %}
+    <span>{{total_dislikes}} </span>
+    <button
+      class="border-0 bg-white"
+      type="submit"
+      name="post_id"
+      value="{{post.id}}"
+    >
+      <i
+        class="fa-sharp fa-solid fa-thumbs-down fa-flip-horizontal"
+        style="color: red; font-size: 30px"
+      ></i>
+    </button>
+  </form>
+  {% else %}
+  <form action="{% url 'post_dislike' post.pk %}" method="post" class="ms-4">
+    {% csrf_token %}
+    <span>{{total_dislikes}} </span>
+    <button
+      class="border-0 bg-white"
+      type="submit"
+      name="post_id"
+      value="{{post.id}}"
+    >
+      <i
+        class="fa-sharp fa-solid fa-thumbs-down fa-flip-horizontal"
+        style="color: gray; font-size: 30px"
+      ></i>
+    </button>
+  </form>
+  {% endif %}
+</div>
+<div class="comments">
+  {% with comments.count as total_comments %}
+  <h2>{{total_comments}} comment{{total_comments|pluralize}}</h2>
+  {% endwith %}
+  
+  {% load mptt_tags %}
+  <div style="width:fit-content">
+    {% recursetree comments %}
+        <div id= "{{ node.id }}" class="my-2 p-2 rounded d-flex flex-column" style="border: 1px solid gray">
+            
+            <p>By <strong>{{node.author}}</strong> at {{node.created_at}}</p> 
+            
+            <p>{{node.content}}</p> 
+            <button class="btn btn-primary" onclick="reply({{ node.id }},{{post.id}})">Reply</button>
+        </div>
+        {% if not node.is_leaf_node %}
+        <div class="children ps-3 ">
+            {{children}}
+        </div>
+        {% endif%}
+    {% endrecursetree %}
+  </div>
+  <h3>Make a new comment</h3>
+  <form method="post" class="post-form" action="{% url 'post_comment' post.pk %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary mb-2" name="post_id"
+    value="{{post.id}}">comment</button>
+    </form>
+</div>
+{% else %}
+<p>Please Login to like, dislike or comment on the post</p>
+{% endif %} 
+
+<script>
+    function reply(id,post_id){
+        const replyForm = document.getElementById('replyForm')
+        const comment_to_reply = document.getElementById(id);
+        if(document.contains(replyForm)){
+            replyForm.remove()
+        }
+        form = `
+            <form method="post" class="post-form" action="{% url 'post_comment' post.pk %}" id="replyForm">
+            {% csrf_token %}
+            <div class="d-flex justify-content-between">
+                <h2>Reply</h2>
+                <div>
+                    <button type="button" class="btn btn-outline-secondary" onclick=formExit()>Close</button>
+
+                </div>
+            </diV>
+        <p>
+            <select name="parent" class="d-none" id="id_parentt">
+                <option value="${id}" selected="${id}"></option>
+            </select>
+        </p>
+        
+            <label for="id_content">Content:</label>
+            <textarea name="content" cols="40" rows="5" class="form-control" required="" id="id_content"></textarea> 
+        
+            <select name="post" class="d-none" id="id_postt">
+                <option value="${post_id}" selected="${post_id}"></option>
+            </select>
+        
+            <button type="submit" class="btn btn-primary mb-2" name="post_id" value="1">comment</button>
+            </form>`
+            comment_to_reply.insertAdjacentHTML('afterend',form)
+    }
+    function formExit(){
+        document.getElementById('replyForm').remove()
+    }
+</script>
+{% endblock %}
